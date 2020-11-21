@@ -1,5 +1,5 @@
 /*
- CS: pin 7
+ CS_MIC: pin 7
  MISO: pin 12
  SCK: pin 13
 */
@@ -8,28 +8,53 @@
 #include <SPI.h>
 
 #define CS 7
-#define AUDIO_OUT 3 
+#define DAC 5
 
 #define SAMPLES 128          //Must be a power of 2
 #define SAMPLING_FREQUENCY 200000 
+
+#define CUTOFF_LOW 25000
+#define CUTOFF_HIGH 50000
+#define SHIFT_TO_LOW 500
  
 arduinoFFT FFT = arduinoFFT();
+
+inline unsigned int freq_to_ind(unsigned int frq) {
+
+  return (frq * (SAMPLES - 1)) / SAMPLING_FREQUENCY;
+
+}
  
-unsigned int sampling_period_us;
+unsigned int sampling_period_us=1000000/SAMPLING_FREQUENCY;
 unsigned long microseconds;
+
+unsigned int cut_low_index = freq_to_ind(CUTOFF_LOW);
+unsigned int cut_high_index = freq_to_ind(CUTOFF_HIGH);
+unsigned int new_low_index = freq_to_ind(SHIFT_TO_LOW);
+unsigned int shifted_freqs = cut_high_index - cut_low_index;
  
 double vReal[SAMPLES];
 double vImag[SAMPLES];
 
+double vReal_pb[SAMPLES];
+double vImag_pb[SAMPLES];
+
+double *cut_low_real = vReal + cut_low_index;
+double *cut_low_imag = vImag + cut_high_index;
+
+double *new_low_real = vReal_pb + new_low_index;
+double *new_low_imag = vImag_pb + new_low_index;
+
 void setup() {
-  Serial.begin(9600);
+  //Serial.begin(9600);
   SPI.begin();
   SPI.setDataMode(SPI_MODE0); // configuration of SPI communication in mode 0
-  SPI.setClockDivider(SPI_CLOCK_DIV16); // configuration of clock at 1MHz
+  SPI.setClockDivider(72); // configuration of clock at 1MHz
   pinMode(CS, OUTPUT);
 }
 
 void loop() {
+  
   /*SAMPLING*/
     for(int i=0; i<SAMPLES; i++)
     {
@@ -38,42 +63,28 @@ void loop() {
         vReal[i] = MIC3_getSound();
         vImag[i] = 0;
      
-        while(micros() < (microseconds + sampling_period_us)){
-        }
+        while(micros() < (microseconds + sampling_period_us)) ;
+        
     }
  
     /*FFT*/
     FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
     FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD);
-    FFT.ComplexToMagnitude(vReal, vImag, SAMPLES);
 
-    double *mouse_freqs = vReal+100;
-    double max_mouse_intens;
-    max_mouse_intens = 0.0;
-
-    for(byte idx = 0; idx < 10; idx++) {
-      max_mouse_intens = mouse_freqs[idx] > max_mouse_intens ? mouse_freqs[idx] : max_mouse_intens;
+    /* ??? */
+    for (unsigned int i=0;i<shifted_freqs;i++) {
+      new_low_real[i] = cut_low_real[i];
+      new_low_imag[i] = cut_low_imag[i];
     }
 
-    if (max_mouse_intens > 3000.0) {
-      double peak = FFT.MajorPeak(mouse_freqs, SAMPLES, SAMPLING_FREQUENCY);
-      int frq = (int) (peak/20.0);
-      if (frq < 5000) {
-        tone(AUDIO_OUT, frq);
-        Serial.println(max_mouse_intens);
-      } else {
-        noTone(AUDIO_OUT);
-      }
-    } else {
-      noTone(AUDIO_OUT);
-    }
+    /* PROFIT! */
+    FFT.Windowing(vReal_pb, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_REVERSE);
+    FFT.Compute(vReal_pb, vImag_pb, SAMPLES, FFT_REVERSE);
     
-    
-    /*PRINT RESULTS*/
     
 }
 
-int MIC3_getSound(void) {
+inline int MIC3_getSound(void) {
   digitalWrite(CS, LOW);  //activate chip select
   int sound = SPI.transfer(0) | (SPI.transfer(0) << 8); //reconstruct 12-bit data
   digitalWrite(CS, HIGH); //deactivate chip select
