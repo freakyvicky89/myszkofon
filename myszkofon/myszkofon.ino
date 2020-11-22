@@ -1,14 +1,13 @@
 /*
- CS_MIC: pin 7
- MISO: pin 12
- SCK: pin 13
+ MISO: pin D12
+ SCK: pin D13
 */
 
 #include <arduinoFFT.h>
 #include <SPI.h>
 
-#define CS 7
-#define DAC 5
+#define CS PA_4 //A3 on board
+#define DAC PA_5 //A4 on board
 
 #define SAMPLES 128          //Must be a power of 2
 #define SAMPLING_FREQUENCY 200000 
@@ -47,10 +46,12 @@ double *new_low_imag = vImag_pb + new_low_index;
 
 void setup() {
   //Serial.begin(9600);
-  SPI.begin();
+  SPI.begin(CS);
   SPI.setDataMode(SPI_MODE0); // configuration of SPI communication in mode 0
   SPI.setClockDivider(72); // configuration of clock at 1MHz
   pinMode(CS, OUTPUT);
+  pinMode(DAC, OUTPUT);
+  analogWriteResolution(12);
 }
 
 void loop() {
@@ -62,6 +63,8 @@ void loop() {
      
         vReal[i] = MIC3_getSound();
         vImag[i] = 0;
+
+        analogWrite(DAC, vReal_pb[i]);
      
         while(micros() < (microseconds + sampling_period_us)) ;
         
