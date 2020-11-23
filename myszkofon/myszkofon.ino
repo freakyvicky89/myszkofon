@@ -1,4 +1,6 @@
 /*
+ * ALL FREQUENCIES IN kHz!!!
+ * 
  MISO: pin D12
  SCK: pin D13
 */
@@ -10,11 +12,11 @@
 #define DAC PA_5 //A4 on board
 
 #define SAMPLES 128          //Must be a power of 2
-#define SAMPLING_FREQUENCY 200000 
+#define SAMPLING_FREQUENCY 200 
 
-#define CUTOFF_LOW 25000
-#define CUTOFF_HIGH 50000
-#define SHIFT_TO_LOW 500
+#define CUTOFF_LOW 25
+#define CUTOFF_HIGH 50
+#define SHIFT_TO_LOW 1
  
 arduinoFFT FFT = arduinoFFT();
 
@@ -24,7 +26,7 @@ inline unsigned int freq_to_ind(unsigned int frq) {
 
 }
  
-unsigned int sampling_period_us=1000000/SAMPLING_FREQUENCY;
+unsigned int sampling_period_us=1000/SAMPLING_FREQUENCY;
 unsigned long microseconds;
 
 unsigned int cut_low_index = freq_to_ind(CUTOFF_LOW);
