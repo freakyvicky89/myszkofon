@@ -16,13 +16,13 @@
 
 #define CUTOFF_LOW 25
 #define CUTOFF_HIGH 50
-#define SHIFT_TO_LOW 1
+#define SHIFT_TO_LOW 0.1
  
 arduinoFFT FFT = arduinoFFT();
 
-inline unsigned int freq_to_ind(unsigned int frq) {
+inline unsigned int freq_to_ind(double frq) {
 
-  return (frq * (SAMPLES - 1)) / SAMPLING_FREQUENCY;
+  return (unsigned int)((frq * (SAMPLES - 1)) / SAMPLING_FREQUENCY);
 
 }
  
