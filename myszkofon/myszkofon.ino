@@ -14,8 +14,8 @@
 #define SAMPLES 128          //Must be a power of 2
 #define SAMPLING_FREQUENCY 200 
 
-#define CUTOFF_LOW 25
-#define CUTOFF_HIGH 50
+#define CUTOFF_LOW 30
+#define CUTOFF_HIGH 45
 #define SHIFT_TO_LOW 0.1
  
 arduinoFFT FFT = arduinoFFT();
