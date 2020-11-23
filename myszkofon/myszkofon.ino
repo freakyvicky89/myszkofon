@@ -12,17 +12,17 @@
 #define DAC PA_5 //A4 on board
 
 #define SAMPLES 128          //Must be a power of 2
-#define SAMPLING_FREQUENCY 200 
+#define SAMPLING_FREQUENCY 100 
 
 #define CUTOFF_LOW 30
-#define CUTOFF_HIGH 45
-#define SHIFT_TO_LOW 0.1
+#define CUTOFF_HIGH 42
+#define SHIFT_TO_LOW 1
  
 arduinoFFT FFT = arduinoFFT();
 
-inline unsigned int freq_to_ind(double frq) {
+inline unsigned int freq_to_ind(int frq) {
 
-  return (unsigned int)((frq * (SAMPLES - 1)) / SAMPLING_FREQUENCY);
+  return (frq * (SAMPLES - 1)) / SAMPLING_FREQUENCY;
 
 }
  
