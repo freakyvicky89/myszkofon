@@ -65,6 +65,9 @@ void loop() {
         vImag[i] = 0;
 
         analogWrite(DAC, vReal_pb[i]);
+
+        vReal_pb[i] = 0;
+        vImag_pb[i] = 0;
      
         while(micros() < (microseconds + sampling_period_us)) ;
         
