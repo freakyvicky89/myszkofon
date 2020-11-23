@@ -32,7 +32,7 @@ unsigned long microseconds;
 unsigned int cut_low_index = freq_to_ind(CUTOFF_LOW);
 unsigned int cut_high_index = freq_to_ind(CUTOFF_HIGH);
 unsigned int new_low_index = freq_to_ind(SHIFT_TO_LOW);
-unsigned int shifted_freqs = cut_high_index - cut_low_index;
+volatile unsigned int shifted_freqs = cut_high_index - cut_low_index;
  
 double vReal[SAMPLES];
 double vImag[SAMPLES];
@@ -80,7 +80,7 @@ void loop() {
     FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD);
 
     /* ??? */
-    for (unsigned int i=0;i<shifted_freqs;i++) {
+    for (volatile unsigned int i=0;i<shifted_freqs;i++) {
       new_low_real[i] = cut_low_real[i];
       new_low_imag[i] = cut_low_imag[i];
     }
